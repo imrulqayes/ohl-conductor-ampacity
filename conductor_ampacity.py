@@ -140,7 +140,7 @@ def main():
     print(f"{'='*60}\n")
 
     # ── Get conductor data ─────────────────────────────────────────────────
-    conductor_name = args.conductor or _str(cfg, "conductor", "name", fallback="").strip()
+    conductor_name = (args.conductor or _str(cfg, "conductor", "name", fallback="")).strip().lower()
 
     if conductor_name:
         print(f"Looking up conductor: '{conductor_name}' ...")

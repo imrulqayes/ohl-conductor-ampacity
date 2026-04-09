@@ -11,53 +11,53 @@ Calculates the thermal rating of overhead power line conductors per the
 
 ---
 
+## How to Use
+
+For a step-by-step guide to installing Python, setting up the tool, and running
+your first calculation, see **[HOW_TO_USE.md](HOW_TO_USE.md)**.
+
+---
+
 ## Project Structure
 
 ```
 conductor_ampacity/
-├── conductor_ampacity.py     ← Main script (run this)
+├── conductor_ampacity.py     ← Main script
 ├── config.ini                ← All user inputs go here
 ├── run_ampacity.bat          ← Double-click to run on Windows
 ├── requirements.txt          ← Python dependencies
+├── HOW_TO_USE.md             ← Step-by-step user guide
 ├── data/
-│   └── conductor_data.xlsx                ← Conductor database
-├── output/                   ← Excel results are saved here
-├── src/
-│   ├── ieee738.py            ← IEEE 738 calculation functions
-│   ├── cigre.py              ← CIGRE placeholder (future)
-│   ├── conductor_db.py       ← Excel database lookup
-│   └── reporter.py           ← Excel report generator
-└── previous_codes/           ← Original scripts (reference only)
+│   └── conductor_data.xlsx   ← Conductor database
+├── output/                   ← Excel results are saved here (auto-created)
+└── src/
+    ├── ieee738.py            ← IEEE 738 calculation functions
+    ├── cigre.py              ← CIGRE placeholder (future)
+    ├── conductor_db.py       ← Excel database lookup
+    └── reporter.py           ← Excel report generator
 ```
 
 ---
 
-## Quick Start
+## Configuration Reference (`config.ini`)
 
-### Step 1 — Edit `config.ini`
+All calculation inputs are set in `config.ini`. Open it in any text editor.
+**You only need to change the conductor name** — all other parameters have
+working default values based on IEEE 738 standard conditions.
 
-Open `config.ini` in any text editor. The file is organised into sections:
+### `[conductor]`
 
-#### `[conductor]`
-Specify the conductor either by **name** (recommended) or by **manual data**.
+Set the conductor name. The spelling must match an entry in `data/conductor_data.xlsx`
+exactly, but capitalisation does not matter (`grosbeak`, `Grosbeak`, and `GROSBEAK`
+all work).
 
 ```ini
 [conductor]
-name = Grosbeak     ; <-- change this to your conductor name
+name = Grosbeak     ; change this to your conductor name
 ```
 
-If the conductor is not in the database, comment out `name` and fill in the
-manual fields instead:
+### `[environment]`
 
-```ini
-; name =
-diameter_mm              = 25.16
-resistance_low_ohm_per_km  = 90.22
-resistance_high_ohm_per_km = 107.60
-heat_capacity_J_per_mK   = 1047
-```
-
-#### `[environment]`
 Site and weather conditions:
 
 ```ini
@@ -68,7 +68,8 @@ wind_angle_deg = 90      ; Wind-to-conductor angle (90° = perpendicular)
 atmosphere     = clear   ; clear or industrial
 ```
 
-#### `[solar]`
+### `[solar]`
+
 Geographic and date/time information for solar heat gain:
 
 ```ini
@@ -78,7 +79,8 @@ hour             = 11          ; 24-h format (12 = solar noon)
 line_azimuth_deg = 45          ; Degrees clockwise from true North
 ```
 
-#### `[conductor_properties]`
+### `[conductor_properties]`
+
 Surface optical properties (affects heat exchange):
 
 ```ini
@@ -86,7 +88,8 @@ emissivity   = 0.7   ; Radiation heat loss (0–1; ~0.7 for aged conductors)
 absorptivity = 0.9   ; Solar heat absorption (0.23–0.91)
 ```
 
-#### `[calculations]`
+### `[calculations]`
+
 Choose which calculations to run and set their inputs:
 
 ```ini
@@ -94,7 +97,6 @@ run_thermal_rating     = true   ; Enable/disable each calculation
 run_steady_temperature = true
 run_transient          = true
 
-max_conductor_temp_C        = 150        ; Fallback max temp if not in database
 steady_current_A            = 900        ; For steady-state temperature calculation
 transient_pre_current_A     = auto       ; Pre-fault current (A), or 'auto' = 50% of rating
 transient_fault_levels_pct  = 110, 120, 130, 150, 200  ; Fault levels as % of thermal rating
@@ -104,40 +106,13 @@ transient_interval_s        = 60         ; Time step (seconds)
 
 ---
 
-### Step 2 — Run the Script
+## Output
 
-**Option A — Double-click `run_ampacity.bat`** (Windows, easiest)
+Results are saved as a formatted Excel file in the `output/` folder, named
+`{ConductorName}_{timestamp}.xlsx`. The file contains:
 
-**Option B — From the terminal:**
-
-```bash
-# Run with conductor from config.ini
-python conductor_ampacity.py
-
-# Override conductor name on the command line
-python conductor_ampacity.py grosbeak
-python conductor_ampacity.py Drake
-
-# List all conductors in the database
-python conductor_ampacity.py --list
-
-# Console output only, no Excel file
-python conductor_ampacity.py --no-output
-
-# Use a different config file
-python conductor_ampacity.py --config path/to/other.ini
-```
-
----
-
-### Step 3 — View Results
-
-Results are printed to the console and saved as a formatted Excel file in the
-`output/` folder. The file is named `{conductor}_{timestamp}.xlsx`.
-
-The Excel file contains:
 - **Summary sheet** — all inputs and key results in a formatted table
-- **Transient Profile sheet** — time-series temperature data (if transient was run)
+- **Transient Profile sheet** — time-series temperature data and chart (if transient was run)
 
 ---
 
@@ -149,35 +124,11 @@ To add a new conductor, add a new row with these columns:
 
 | Column | Description | Example |
 |---|---|---|
-| Conductor Name | Name (used for lookup) | Grosbeak |
+| Conductor Name | Name used for lookup | Grosbeak |
 | Diameter (mm) | Outside diameter | 25.16 |
 | R75 (ohm/m) | AC resistance at 75 °C | 0.107612 |
 | R25 (ohm/m) | AC resistance at 25 °C | 0.090224 |
 | Conductor heat capacity (J/m °C) | Thermal mass | 1047 |
-
-> **Conductor name lookup is case-insensitive but requires exact spelling.**
-> `grosbeak`, `Grosbeak`, and `GROSBEAK` all match — but `grosbeaks` does not.
-
----
-
-## Requirements
-
-- Python 3.10 or later (uses `|` union type hints)
-- `pandas` — reading the conductor database Excel file
-- `openpyxl` — creating the output Excel report
-
-Install dependencies (if not already installed):
-
-```bash
-pip install -r requirements.txt
-```
-
-Or with conda (`data_analysis` environment):
-
-```bash
-conda activate data_analysis
-pip install -r requirements.txt
-```
 
 ---
 
