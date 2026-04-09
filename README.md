@@ -157,3 +157,11 @@ calculation module.
 - Transient calculation uses the Euler forward-difference method with the time
   step (`transient_interval_s`) you specify.
 - A smaller time step improves accuracy but increases calculation time.
+
+---
+
+## Useful Resources
+
+- [BenHutchinsWPP — IEEE 738 Python Implementation](https://github.com/BenHutchinsWPP/IEEE_738?tab=readme-ov-file)
+- [Tomas Barton — IEEE 738 Python Implementation](https://github.com/tommz9/pylinerating)
+- [IEEE 738 Standard](https://standards.ieee.org/ieee/738/4997/)
