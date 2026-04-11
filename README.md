@@ -11,6 +11,9 @@ Calculates the thermal rating of overhead power line conductors per the
 
 ---
 
+## Intended Users
+This tool is built for power sector officials like me with zero or little coding knowledge. Although python is used for the calculation, it is designed for non-coders. Main idea is simple, update the conductor database excel file, run the python file and find your result summary in an excel file, that's it.
+
 ## How to Use
 
 For a step-by-step guide to installing Python, setting up the tool, and running
@@ -135,7 +138,7 @@ To add a new conductor, add a new row with these columns:
 ## Future: CIGRE Standard
 
 The file `src/cigre.py` is a placeholder for CIGRE thermal rating methods
-(CIGRE TB 207 / CIGRE TB 601). Once implemented, switch the standard in
+(CIGRE TB 207 / CIGRE TB 601). Once implemented, ampacity can be calculated according to that standard by switching the standard in
 `config.ini`:
 
 ```ini
