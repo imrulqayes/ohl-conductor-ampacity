@@ -250,8 +250,13 @@ def main():
             dia        = conductor["diameter_mm"] / 1000.0,
             atmosphere = env["atmosphere"],
         )
-        dia_m = conductor["diameter_mm"] / 1000.0
-        results["solar_heat_gain"] = round(q_solar / dia_m, 2)
+        results["solar_heat_gain"] = round(calc.calculate_total_solarheat_radiation(
+            lat        = solar["latitude"],
+            dmy        = solar["date"],
+            h24        = solar["hour"],
+            elev       = env["elevation"],
+            atmosphere = env["atmosphere"],
+        ), 2)
         print(f"Solar Heat Gain  : {results['solar_heat_gain']:.2f} W/m²")
     except Exception as e:
         results["solar_heat_gain"] = None
