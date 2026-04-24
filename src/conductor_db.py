@@ -208,14 +208,24 @@ def get_conductor_data(name: str) -> dict:
     heat_capacity = _get("heat_capacity", required=False)
     max_temp      = _get("max_temp",      required=False)
 
-    # Determine resistance units: ohm/m vs ohm/km
-    # Typical ACSR/ACSS values: ohm/m ~ 5e-5 to 5e-4; ohm/km ~ 0.05 to 0.5
-    if r_low_raw > 0.01:
-        r_low  = r_low_raw  / 1000.0
-        r_high = r_high_raw / 1000.0
-    else:
-        r_low  = r_low_raw
-        r_high = r_high_raw
+    # Database stores resistance in ohm/km; convert to ohm/m for all calculations.
+    r_low  = r_low_raw  / 1000.0
+    r_high = r_high_raw / 1000.0
+
+    # Sanity check: typical overhead conductors fall in 0.01–2.0 ohm/km (1e-5–2e-3 ohm/m).
+    # Warn if the converted values look unreasonable.
+    _R_MIN, _R_MAX = 1e-5, 2e-3   # ohm/m
+    if not (_R_MIN <= r_low <= _R_MAX) or not (_R_MIN <= r_high <= _R_MAX):
+        warnings.warn(
+            f"Conductor '{name}': resistance values after unit conversion look unusual.\n"
+            f"  R_low  = {r_low_raw:.6g} ohm/km → {r_low:.6g} ohm/m\n"
+            f"  R_high = {r_high_raw:.6g} ohm/km → {r_high:.6g} ohm/m\n"
+            f"  Expected range: {_R_MIN:.0e}–{_R_MAX:.0e} ohm/m "
+            f"({_R_MIN*1000:.4f}–{_R_MAX*1000:.2f} ohm/km).\n"
+            f"  Check that the database values are in ohm/km.",
+            UserWarning,
+            stacklevel=2,
+        )
 
     # Reference temperatures — try to read from database; fall back to IEEE 738 table defaults
     temp_low  = _get("temp_low",  required=False)
